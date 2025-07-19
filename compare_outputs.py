@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 def read_output(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -7,20 +9,13 @@ def read_output(filename):
 def main():
     cuda_vals = read_output('cuda_output.txt')
     c_vals = read_output('c_output.txt')
-    if len(cuda_vals) != len(c_vals):
-        print(f"Length mismatch: CUDA={len(cuda_vals)}, C={len(c_vals)}")
-        return
-    max_diff = 0.0
-    total_diff = 0.0
-    for i, (a, b) in enumerate(zip(cuda_vals, c_vals)):
-        diff = abs(a - b)
-        if diff > max_diff:
-            max_diff = diff
-        total_diff += diff
-        if diff > 1e-6:
-            print(f"Index {i}: CUDA={a:.8f}, C={b:.8f}, Diff={diff:.8e}")
-    print(f"Max difference: {max_diff:.8e}")
-    print(f"Total difference: {total_diff:.8e}")
+    diffs = [abs(a - b) for a, b in zip(cuda_vals, c_vals)]
+    with open('differences.txt', 'w') as df:
+        for i, (a, b, d) in enumerate(zip(cuda_vals, c_vals, diffs)):
+            print(f"Index {i}: CUDA={a:.12f}, C={b:.12f}, Diff={d:.12e}")
+            df.write(f"{i} {a:.12f} {b:.12f} {d:.12e}\n")
+    print(f"Max difference: {max(diffs):.12e}")
+    print(f"Total difference: {sum(diffs):.12e}")
 
 if __name__ == "__main__":
     main() 
